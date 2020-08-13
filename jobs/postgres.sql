@@ -3,8 +3,8 @@ $$
 DECLARE
 	test_count integer;
 	test_mincount integer = 180;
-  test_md5_source text;
-  test_md5_destination text;
+  test_md5_current text;
+  test_md5_previous text;
 
 BEGIN
   -- create server connection
@@ -33,17 +33,10 @@ BEGIN
   FROM
     ogr_fdw_reacharound_polling_locations;
 
-  SELECT
-    md5(CAST((array_agg(t.*)) AS text)) into test_md5_destination
-  FROM
-    (
-      SELECT name, precno, geom
-      FROM polling_locations
-      ORDER BY 1
-    ) AS t;
+  SELECT obj_description('polling_locations'::regclass) into test_md5_previous;
 
   SELECT
-    md5(CAST((array_agg(t.*)) AS text)) into test_md5_source
+    md5(CAST((array_agg(t.*)) AS text)) into test_md5_current
   FROM
     (
       SELECT name, precno, geom
@@ -53,14 +46,17 @@ BEGIN
 
   -- run update if tests passed
   IF test_count >= test_mincount THEN
-		IF test_md5_source <> test_md5_destination THEN
+		IF test_md5_current <> test_md5_previous THEN
 			-- TRUNCATE TABLE polling_locations RESTART IDENTITY;
+
 			INSERT INTO polling_locations
 				(geom, precno, name, city, zone, address, type, location)
 			SELECT
 				geom, precno, name, city, zone, address, type, location
 			FROM
 				ogr_fdw_reacharound_polling_locations;
+
+			EXECUTE 'COMMENT ON TABLE polling_locations IS ' || quote_literal(test_md5_current);
 		ELSE
 			raise exception 'no change found';
 		END IF;
