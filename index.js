@@ -6,7 +6,7 @@ const { logJob } = require("./lib/log");
 const jobs = "./jobs";
 const args = process.argv.slice(2);
 
-console.log("ETL party getting started!\n\r==========================");
+console.log("ETL party getting started!\n\r===============================");
 
 // DB connection
 console.log("Filling the pool...");
@@ -33,12 +33,14 @@ const pool = new Pool({
 
     await client.query(sql.toString())
       .then(async res=> {
-        await logJob(file, client)
+        await logJob(file, client, 'table updated')
       })
       .catch(async e => {
         await logJob(file, client, e.message || e)
       })
   }
+
+  console.log("===============================\n\rThe ETL party is over. Go home.")
 
   await client.release();
   await pool.end();
