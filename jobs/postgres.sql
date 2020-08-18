@@ -33,7 +33,7 @@ BEGIN
   FROM
     ogr_fdw_reacharound_polling_locations;
 
-  SELECT obj_description('polling_locations'::regclass) into test_md5_previous;
+  SELECT COALESCE(obj_description('polling_locations'::regclass), '') into test_md5_previous;
 
   SELECT
     md5(CAST((array_agg(t.*)) AS text)) into test_md5_current

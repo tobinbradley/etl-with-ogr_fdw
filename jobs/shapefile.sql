@@ -43,7 +43,7 @@ BEGIN
       ORDER BY 1
     ) AS t;
 
-	SELECT obj_description('polling_locations'::regclass) into test_md5_previous;
+	SELECT COALESCE(obj_description('polling_locations'::regclass), '') into test_md5_previous;
 
 
   -- run update if tests passed
