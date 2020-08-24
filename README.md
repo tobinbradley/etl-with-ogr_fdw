@@ -35,6 +35,12 @@ The script runs as a transaction, so you shouldn't get left in a broken state if
 
 ## Get started
 
+`ogr_fdw` must be installed in the target Postgres database for any of this to work. It is available in most Linux installs and is available in the post-installation Postgres options on Windows.
+
+```sql
+CREATE EXTENSION ogr_fdw;
+```
+
 One you have the repo, first install the node packages.
 
 ```bash
@@ -51,6 +57,12 @@ If you only want to run one of your jobs, you can add that to the command to onl
 
 ```bash
 node index.js myjob.sql
+```
+
+You can make a template in the format of `<source_layer_name> <destination_layer_name> <minimum row count> <sql file name>` like this:
+
+```bash
+node template.js source destination 200 my_job.sql
 ```
 
 ## Things to note
