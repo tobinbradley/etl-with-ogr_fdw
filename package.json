@@ -9,6 +9,6 @@
   "license": "MIT",
   "dependencies": {
     "dotenv": "^8.2.0",
-    "pg": "^8.3.0"
+    "pg": "^8.5.1"
   }
 }
