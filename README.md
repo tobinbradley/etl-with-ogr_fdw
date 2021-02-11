@@ -19,13 +19,13 @@ BEGIN
 
   -- create foreign table
 
-  -- set test criteria, like a row count or md5 value
+  -- run tests
 
-  -- run update and/or transformation if tests passed
+  -- run update
 
   -- clean up the foreign server/table
 
-  -- do anything else you need to do here
+  -- do anything else you need to do
 
 END;
 $$ LANGUAGE plpgsql;
@@ -47,29 +47,31 @@ One you have the repo, first install the node packages.
 npm install
 ```
 
-Next rename the `.env-demo` file to `.env` and put in your server credentials. Craft some `.sql` jobs in the `jobs` folder. You run them with:
+Next rename the `.env-demo` file to `.env` and put in your server credentials. Craft some `.sql` jobs and put them in the `jobs` folder. There are some examples in the `jobs-demo` folder you can check out. You run your jobs with:
 
 ```bash
 node index.js
 ```
 
-If you only want to run one of your jobs, you can add that to the command to only execute it.
+If you only want to run one of your jobs, you can add the job name to the command to only execute it.
 
 ```bash
 node index.js myjob.sql
 ```
 
-You can make a template in the format of `<source_layer_name> <destination_layer_name> <minimum row count> <sql file name>` like this:
+You can generate a starter job template like this:
 
 ```bash
+# node template.js <source table> <destination table> <minimum row count> <output job name>
 node template.js source destination 200 my_job.sql
 ```
 
-## Things to note
 
-* `index.js` essentially just loops through the `.sql` files in the `jobs` folder and runs them. It's embarrassingly tiny.
-* Jobs are executed in series. You could change the loop to run them in parallel if you are in a hurry. You might run in to problems two parallel jobs use the same foreign server or table name. I haven't tried that though.
-* The `lib/log.js` script logs things in two places - a file (`log.csv`), and, if it exists, a table in Postgres you can make (table create script in `lib/log.js`). You can comment out either of those if you don't want them. That would be a great place to send yourself an email if something bad happened too.
-* In the example jobs, I add and remove the foreign server and table as part of the script. You could set those up on your server and leave them there on the time and take that out of the job. I like it better in the script so (a) I don't leave a mess and (b) I can have the script to point at a new server without extra setup.
-* You might be asking yourself *if ogr_fdw makes the table look like it's in the database, why bother with the ETL part?* You might not need to. Some reasons you might want to have a local copy is for performance or reliability.
-* Pro tip: if you are trying to pull data from a `https` source from a Docker image, make sure you have the `ca-certificates` package installed.
+
+## Tips and tricks
+
+* Jobs are executed in series. You could change the loop in `index.js` to run them in parallel if you are in a hurry. You might run in to problems if two parallel jobs use the same foreign server or table name at the same time. Spoiler: I haven't tried that.
+* The `lib/log.js` script logs things in two places - a file (`log.csv`), and, if it exists, a table in Postgres you can make (table create script in `lib/log.js`). You can comment out either of those if you don't want them. That would be a great place to send yourself an email if something terrible happened.
+* In the example jobs, I add and remove the foreign server and table as part of the script. You could set those up on your server and leave them there permanently if you want. My thinking is if you wanted people to hit those tables live you wouldn't need an ETL job.
+* If you are trying to pull data from a `https` source from a Docker image, make sure you have the `ca-certificates` package installed.
+* Your Docker Postgres instance may have trouble with DNS resolution. If so, use the source's IP address instead.
