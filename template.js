@@ -24,7 +24,7 @@ BEGIN
 
 
   -- create foreign table
-  CREATE FOREIGN fdt_${rndString}
+  CREATE FOREIGN TABLE IF NOT EXISTS fdt_${rndString}
 	(
 
 	) SERVER "fdw_${rndString}" OPTIONS (layer '${source}');
@@ -36,7 +36,7 @@ BEGIN
   FROM
     fdt_${rndString};
 
-  IF test_count >= test_mincount THEN
+  IF test_count < test_mincount THEN
     raise exception 'error: minimum row count failure';
   END IF;
 
@@ -53,7 +53,7 @@ BEGIN
       ORDER BY 1
     ) AS t;
 
-  IF test_md5_current <> test_md5_previous THEN
+  IF test_md5_current = test_md5_previous THEN
     raise exception 'no change found';
   END IF;
 
