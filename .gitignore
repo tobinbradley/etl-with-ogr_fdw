@@ -27,3 +27,4 @@ public
 config
 scratch.sql
 log.csv
+data/
