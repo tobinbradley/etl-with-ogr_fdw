@@ -9,7 +9,7 @@ BEGIN
 	CREATE SERVER IF NOT EXISTS ogr_fdw_ags
   FOREIGN DATA WRAPPER ogr_fdw
   OPTIONS (
-	datasource 'GeoJSON:https://services.arcgis.com/iFBq2AW9XO0jYYF7/ArcGIS/rest/services/NCCovid19/FeatureServer/0/query?where=1=1&outfields=OBJECTID,CONAME,County,Total,Deaths,Hosp,Rate10K&f=geoJSON',
+	datasource 'GeoJSON:https://services.arcgis.com/iFBq2AW9XO0jYYF7/ArcGIS/rest/services/NCCovid19/FeatureServer/0/query?where=objectid%3C1000&outfields=OBJECTID,CONAME&f=geoJSON',
 	format 'GeoJSON' );
 
   -- create foreign table
