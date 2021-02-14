@@ -26,7 +26,7 @@ BEGIN
   -- create foreign table
   CREATE FOREIGN TABLE IF NOT EXISTS fdt_${rndString}
 	(
-
+    -- insert foreign table column mappings here
 	) SERVER "fdw_${rndString}" OPTIONS (layer '${source}');
 
 
@@ -63,17 +63,17 @@ BEGIN
 
   INSERT INTO ${destination}
     (
-
+      -- insert local table rows here
     )
   SELECT
-
+      -- insert matching foreign table rows here
   FROM
     fdt_${rndString};
 
   EXECUTE 'COMMENT ON TABLE ${destination} IS ' || quote_literal(test_md5_current);
 
 
-  -- remove server and foreign table
+  -- remove server(s) and foreign table(s)
   DROP SERVER IF EXISTS fdw_${rndString} CASCADE;
 
 END;
