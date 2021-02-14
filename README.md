@@ -66,6 +66,51 @@ You can generate a starter job template like this:
 node template.js source destination 200 my_job.sql
 ```
 
+## Connecting to Foreign Databases
+
+You can find examples on making connections to RDBMS and local folders on the [ogr-fdw](https://github.com/pramsey/pgsql-ogr-fdw) page, and the [GDAL](https://gdal.org/) docs are a good source of information as well.
+
+The template creator makes an example Postgres connection.
+
+```sql Postgres
+CREATE SERVER IF NOT EXISTS fdw_server
+	FOREIGN DATA WRAPPER ogr_fdw
+	OPTIONS (datasource 'Pg:dbname=? user=? host=? password=?', format 'PostgreSQL' );
+```
+
+A Microsoft SQL Server connection would look something like this:
+
+```sql MSSQL
+CREATE SERVER fdw_mssql
+  FOREIGN DATA WRAPPER ogr_fdw
+  OPTIONS (
+    datasource 'MSSQL:server=?;database=?;uid=?;pwd=?',
+    format 'MSSQLSpatial' );
+```
+
+Getting data out of an Esri SDE database stored using Esri geometry is a problem. You'll need to get the data in to a format GDAL can read before you run the ETL script. If you make a `/data` folder and put GeoJSON files in it (say dumped from an ArcPy script), this ETL tool will make the GeoJSON data available to your ETL jobs using [Express](http://expressjs.com/). The Express server endpoint is `http://<etl-ip>:3000/data/<your-geojson-file>`. Express is using Node's file streaming and can handle quite large GeoJSON files. A database connection to the local GeoJSON file server looks like this:
+
+```sql GeoJSON
+CREATE SERVER IF NOT EXISTS fdw_etl_geojson
+	FOREIGN DATA WRAPPER ogr_fdw
+	OPTIONS (datasource 'GeoJSON:http://<ip address>:3000/data/tax_parcels.geojson', format 'GeoJSON' );
+```
+
+The layer name to use in this case is the name of the file.
+
+```sql GeoJSON Layer
+CREATE FOREIGN TABLE IF NOT EXISTS fdt_tax_parcels
+	(
+    pid varchar,
+    geom Geometry(Geometry, 2264)
+	) SERVER "fdw_etl_geojson" OPTIONS (layer 'tax_parcels');
+```
+
+You can use the Express GeoJSON server in stand-alone mode when developing your ETL scripts via:
+
+```bash
+node serve.js
+```
 
 
 ## Tips and tricks
@@ -75,3 +120,4 @@ node template.js source destination 200 my_job.sql
 * In the example jobs, I add and remove the foreign server and table as part of the script. You could set those up on your server and leave them there permanently if you want. My thinking is if you wanted people to hit those tables live you wouldn't need an ETL job.
 * If you are trying to pull data from a `https` source from a Docker image, make sure you have the `ca-certificates` package installed.
 * Your Docker Postgres instance may have trouble with DNS resolution. If so, use the source's IP address instead.
+* I had a hard time getting `ogr-fdw` to connect to MS SQL from a Docker container. I'm not sure if it's a Docker thing or a Linux thing. If you have similar problems, you may want to try [tds_fdw](https://github.com/tds-fdw/tds_fdw) for those connections.
