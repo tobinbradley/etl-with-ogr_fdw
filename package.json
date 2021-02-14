@@ -5,7 +5,8 @@
   "main": "index.js",
   "scripts": {
     "start": "node index.js",
-    "serve": "node serve.js"
+    "serve": "node serve.js",
+    "template": "node template.js"
   },
   "keywords": [],
   "author": "",
