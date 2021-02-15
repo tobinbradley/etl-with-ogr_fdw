@@ -16,5 +16,5 @@ app.get('/data/:file', (req, res) => {
   })
 })
 app.listen(port, () => {
-  console.log(`Example app listening at http://localhost:${port}`)
+  console.log(`GeoJSON server listening at http://localhost:${port}`)
 })
