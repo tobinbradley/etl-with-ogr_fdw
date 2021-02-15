@@ -88,7 +88,7 @@ CREATE SERVER fdw_mssql
     format 'MSSQLSpatial' );
 ```
 
-Getting data out of an Esri SDE database stored using Esri geometry is a problem. You'll need to get the data in to a format GDAL can read before you run the ETL script. If you make a `/data` folder and put GeoJSON files in it (say dumped from an ArcPy script), this ETL tool will make the GeoJSON data available to your ETL jobs using [Express](http://expressjs.com/). The Express server endpoint is `http://<etl-ip>:3000/data/<your-geojson-file>`. Express is using Node's file streaming and can handle quite large GeoJSON files. A database connection to the local GeoJSON file server looks like this:
+The ETL tool will serve GeoJSON or EsriJSON from a `/data` folder while the jobs are running using [Express](http://expressjs.com/). The Express server endpoint is `http://<etl-ip>:3000/data/<your-json-file>`. This can be a handy dumping place for data files from proprietary sources, like Esri's SDE. Express is using Node's file streaming and can handle quite large GeoJSON files. A database connection to the local GeoJSON file server looks like this:
 
 ```sql GeoJSON
 CREATE SERVER IF NOT EXISTS fdw_etl_geojson
