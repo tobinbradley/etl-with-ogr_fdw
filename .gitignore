@@ -28,3 +28,4 @@ config
 scratch.sql
 log.csv
 data/
+jobs/
