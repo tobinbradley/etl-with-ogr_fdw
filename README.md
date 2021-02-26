@@ -62,15 +62,15 @@ node index.js myjob.sql
 You can generate a starter job template like this:
 
 ```bash
-# node template.js <source table> <destination table> <minimum row count> <output job name>
-node template.js source destination 200 my_job.sql
+# node template.js <source type: ogr || pg || mssql><source table> <destination table> <minimum row count> <output job name>
+node ogr template.js source destination 200 my_job.sql
 ```
 
 ## Connecting to Foreign Databases
 
 You can find examples on making connections to RDBMS and local folders on the [ogr-fdw](https://github.com/pramsey/pgsql-ogr-fdw) page, and the [GDAL](https://gdal.org/) docs are a good source of information as well.
 
-The template creator makes an example Postgres connection.
+The template creator makes an example Postgres connection. **Note that the PostgresSQL OGR driver is not available on Windows Postgres installs via the Stack builder, and `ogr-fdw` recommends using the [native Postgres FDW](https://www.postgresql.org/docs/13/postgres-fdw.html) instead.**
 
 ```sql Postgres
 CREATE SERVER IF NOT EXISTS fdw_server
@@ -88,29 +88,6 @@ CREATE SERVER fdw_mssql
     format 'MSSQLSpatial' );
 ```
 
-The ETL tool will serve GeoJSON or EsriJSON from a `/data` folder while the jobs are running using [Express](http://expressjs.com/). The Express server endpoint is `http://<etl-ip>:3000/data/<your-json-file>`. This can be a handy dumping place for data files from proprietary sources, like Esri's SDE. Express is using Node's file streaming and can handle quite large GeoJSON files. A database connection to the local GeoJSON file server looks like this:
-
-```sql GeoJSON
-CREATE SERVER IF NOT EXISTS fdw_etl_geojson
-	FOREIGN DATA WRAPPER ogr_fdw
-	OPTIONS (datasource 'GeoJSON:http://<ip address>:3000/data/tax_parcels.geojson', format 'GeoJSON' );
-```
-
-The layer name to use in this case is the name of the file.
-
-```sql GeoJSON Layer
-CREATE FOREIGN TABLE IF NOT EXISTS fdt_tax_parcels
-	(
-    pid varchar,
-    geom Geometry(Geometry, 2264)
-	) SERVER "fdw_etl_geojson" OPTIONS (layer 'tax_parcels');
-```
-
-You can use the Express GeoJSON server in stand-alone mode when developing your ETL scripts via:
-
-```bash
-node serve.js
-```
 
 
 ## Tips and tricks
