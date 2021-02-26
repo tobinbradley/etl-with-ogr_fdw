@@ -1,10 +1,73 @@
 const fs = require("fs");
 const path = require("path")
-const source = process.argv[2]
-const destination = process.argv[3]
-const count = process.argv[4]
-const filename = process.argv[5]
+const sourceType = process.argv[2]
+const source = process.argv[3]
+const destination = process.argv[4]
+const count = process.argv[5]
+const filename = process.argv[6]
 const rndString = Math.random().toString(36).substring(5)
+
+let sourceString = ''
+
+if (sourceType === "mssql") {
+  sourceString = `
+  -- create server connection
+  CREATE SERVER IF NOT EXISTS fdw_${rndString}
+	FOREIGN DATA WRAPPER tds_fdw
+	OPTIONS (servername '', database '');
+
+  -- create user mapping
+  CREATE USER MAPPING FOR local_user
+  SERVER fdw_${rndString}
+  OPTIONS (username '', password '');
+
+  -- create foreign table
+  CREATE FOREIGN TABLE IF NOT EXISTS fdt_${rndString}
+	(
+    -- insert foreign table column mappings here
+	)
+  SERVER "fdw_${rndString}"
+  OPTIONS (table_name '${source}');
+  `
+}
+
+if (sourceType === "pg") {
+  sourceString = `
+  -- create server connection
+  CREATE SERVER IF NOT EXISTS fdw_${rndString}
+	FOREIGN DATA WRAPPER postgres_fdw
+	OPTIONS (host '', dbname '');
+
+  -- create user mapping
+  CREATE USER MAPPING FOR local_user
+  SERVER fdw_${rndString}
+  OPTIONS (user '', password '');
+
+  -- create foreign table
+  CREATE FOREIGN TABLE IF NOT EXISTS fdt_${rndString}
+	(
+    -- insert foreign table column mappings here
+	)
+  SERVER "fdw_${rndString}"
+  OPTIONS (schema_name 'public', table_name '${source}');
+  `
+}
+
+if (sourceType === 'ogr'){
+  sourceString = `
+  -- create server connection
+  CREATE SERVER IF NOT EXISTS fdw_${rndString}
+	FOREIGN DATA WRAPPER ogr_fdw
+	OPTIONS (datasource 'Pg:dbname= user= host= password=', format 'PostgreSQL' );
+
+
+  -- create foreign table
+  CREATE FOREIGN TABLE IF NOT EXISTS fdt_${rndString}
+	(
+    -- insert foreign table column mappings here
+	) SERVER "fdw_${rndString}" OPTIONS (layer '${source}');
+  `
+}
 
 const template = `
 do
@@ -17,18 +80,7 @@ DECLARE
 
 BEGIN
 
-  -- create server connection
-  CREATE SERVER IF NOT EXISTS fdw_${rndString}
-	FOREIGN DATA WRAPPER ogr_fdw
-	OPTIONS (datasource 'Pg:dbname= user= host= password=', format 'PostgreSQL' );
-
-
-  -- create foreign table
-  CREATE FOREIGN TABLE IF NOT EXISTS fdt_${rndString}
-	(
-    -- insert foreign table column mappings here
-	) SERVER "fdw_${rndString}" OPTIONS (layer '${source}');
-
+${sourceString}
 
   -- test row count
   SELECT
