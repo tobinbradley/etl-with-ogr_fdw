@@ -6,30 +6,10 @@ const { Pool } = require("pg");
 const { logJob } = require("./lib/log");
 const jobs = "./jobs";
 const args = process.argv.slice(2);
-const express = require('express')
-const app = express()
-const port = 3000
+
 
 
 console.log("ETL party getting started!\n\r===============================");
-
-// Express endpoint for data
-app.get('/data/:file', (req, res) => {
-  const file = `./data/${req.params.file}`
-  fs.access(file, (err) => {
-      if (err) {
-        return res.status(404).send({ message: `File ${file} not found.` });
-      } else {
-        res.setHeader("content-type", "application/json")
-        fs.createReadStream(file).pipe(res)
-      }
-  })
-})
-const server = app.listen(port, () => {
-  console.log(`GeoJSON server listening at http://localhost:${port}`)
-})
-
-
 
 // DB connection
 console.log("Filling the connection pool...");
@@ -67,7 +47,6 @@ const pool = new Pool({
     console.log(`Finished ${file} in ${new Date(performance.now() - t0).toISOString().substr(11, 8)}`)
   }
 
-  await client.release();
   await pool.end();
   await server.close()
 
